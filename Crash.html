@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYSTEM</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+body {
+    background: #000;
+    color: #ff0033;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+h1 { font-size: 24px; margin-bottom: 50px; letter-spacing: 5px; text-shadow: 0 0 10px #ff0033; }
+#crash-btn {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #ff4d4d, #990000);
+    border: 8px solid #220000;
+    box-shadow: 0 20px 50px rgba(255, 0, 51, 0.5), inset 0 -10px 20px rgba(0,0,0,0.8);
+    color: #fff;
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    outline: none;
+}
+#crash-btn:active {
+    transform: scale(0.95) translateY(5px);
+    box-shadow: 0 5px 20px rgba(255, 0, 51, 0.8), inset 0 -5px 10px rgba(0,0,0,0.8);
+}
+#warning {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #ff0033;
+    color: #000;
+    z-index: 100;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+#warning h1 { color: #000; font-size: 50px; text-shadow: none; margin-bottom: 20px; }
+#warning p { font-size: 20px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h1>DO NOT PRESS THE BUTTON</h1>
+<button id="crash-btn">CRASH</button>
+
+<div id="warning">
+    <h1>FATAL ERROR</h1>
+    <p>System memory exhausted.</p>
+</div>
+
+<script>
+document.getElementById('crash-btn').addEventListener('click', function() {
+    // 1. Show the warning screen
+    document.getElementById('warning').style.display = 'flex';
+    
+    // 2. Give the screen a split second to render, then crash it
+    setTimeout(() => {
+        let memoryEater = [];
+        
+        // 3. Infinite loop allocating massive arrays
+        while (true) {
+            // Creates a 1-million-item array, fills it with zeros, and pushes to the main array
+            memoryEater.push(new Array(1000000).fill(0));
+        }
+    }, 100);
+});
+</script>
+
+</body>
+</html>
